@@ -1,30 +1,29 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
 func init() {
 	root.AddCommand(&cobra.Command{
-		Short: "domains",
+		Use:   "domains [options] [name]",
+		Short: "List domains (with optional filter)",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			db, err := ConnectDB("mysql", opts.Database)
-			if err != nil {
-				return err
+			var name string
+			if len(args) > 0 {
+				name = args[0]
 			}
 
-			domains, err := db.FindAllDomains()
+			domains, err := opts.db.FindAllDomains(name)
 			if err != nil {
 				return err
 			}
 
 			for _, d := range domains {
-				fmt.Printf("%v\n", d)
+				msg("%v\n", d.Domain)
 			}
 
-			return db.Close()
+			return nil
 		},
 	})
 }
