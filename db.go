@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 
@@ -116,12 +117,12 @@ func (db *DB) FindAllAccounts(domain string) ([]Account, error) {
 
 // Alias forwards email to another destination.
 type Alias struct {
-	ID                  int    `db:"id"`
-	SourceUsername      string `db:"source_username"`
-	SourceDomain        string `db:"source_domain"`
-	DestinationUsername string `db:"destination_username"`
-	DestinationDomain   string `db:"destination_domain"`
-	Enabled             bool   `db:"enabled"`
+	ID                  int            `db:"id"`
+	SourceUsername      sql.NullString `db:"source_username"`
+	SourceDomain        string         `db:"source_domain"`
+	DestinationUsername string         `db:"destination_username"`
+	DestinationDomain   string         `db:"destination_domain"`
+	Enabled             bool           `db:"enabled"`
 }
 
 // FindAllAliases returns a list of all aliases for a domain.

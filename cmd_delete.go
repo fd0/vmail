@@ -8,7 +8,8 @@ import (
 
 func init() {
 	var cmdNew = &cobra.Command{
-		Use: "delete",
+		Use:   "delete",
+		Short: "Delete domains, accounts, and aliases",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return errors.New("the 'delete' command needs to know what to create: domain, mailbox or alias?")
 		},

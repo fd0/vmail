@@ -8,7 +8,8 @@ import (
 
 func init() {
 	var cmdCreate = &cobra.Command{
-		Use: "create",
+		Use:   "create",
+		Short: "Create domains, accounts, and aliases",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return errors.New("the 'create' command needs to know what to create: domain, mailbox or alias?")
 		},

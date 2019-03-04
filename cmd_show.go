@@ -78,7 +78,10 @@ func printAliases(db *DB, name string) error {
 
 	aliasList := make(map[string][]Alias)
 	for _, a := range aliases {
-		name := a.SourceUsername
+		name := a.SourceUsername.String
+		if !a.SourceUsername.Valid {
+			name = "*"
+		}
 		aliasList[name] = append(aliasList[name], a)
 	}
 
