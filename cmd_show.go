@@ -89,6 +89,11 @@ func printAliases(db *DB, name string) error {
 	t.AddColumn(" Name ", " {{ .Name }} ")
 	t.AddColumn(" Destinations ", " {{ .Destinations }} ")
 
+	type rowData struct {
+		Name         string
+		Destinations string
+	}
+
 	for name, aliases := range aliasList {
 		var destinations []string
 
@@ -96,15 +101,10 @@ func printAliases(db *DB, name string) error {
 			destinations = append(destinations, a.DestinationUsername+"@"+a.DestinationDomain)
 		}
 
-		data := struct {
-			Name         string
-			Destinations string
-		}{
+		t.AddRow(rowData{
 			Name:         name,
 			Destinations: strings.Join(destinations, "\n "),
-		}
-
-		t.AddRow(data)
+		})
 	}
 
 	return t.Write(os.Stdout)

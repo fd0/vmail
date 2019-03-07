@@ -128,7 +128,7 @@ type Alias struct {
 // FindAllAliases returns a list of all aliases for a domain.
 func (db *DB) FindAllAliases(domain string) ([]Alias, error) {
 	var aliases []Alias
-	err := db.Select(&aliases, "SELECT * from aliases WHERE source_domain = ?", domain)
+	err := db.Select(&aliases, "SELECT * from aliases WHERE source_domain = ? ORDER BY source_username", domain)
 	if err != nil {
 		return nil, err
 	}
