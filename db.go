@@ -159,12 +159,26 @@ func (db *DB) CreateAlias(a Alias) error {
 
 // DeleteAlias removes an alias.
 func (db *DB) DeleteAlias(srcuser sql.NullString, srcdomain, dstuser, dstdomain string) error {
-	res, err := db.Exec(`DELETE FROM aliases WHERE
-		source_username = ? AND
-		source_domain = ?
-		AND destination_username = ?
-		AND destination_domain = ?`,
-		srcuser, srcdomain, dstuser, dstdomain)
+	var (
+		res sql.Result
+		err error
+	)
+
+	if srcuser.Valid {
+		res, err = db.Exec(`DELETE FROM aliases WHERE
+			source_username = ? AND
+			source_domain = ?
+			AND destination_username = ?
+			AND destination_domain = ?`,
+			srcuser, srcdomain, dstuser, dstdomain)
+	} else {
+		res, err = db.Exec(`DELETE FROM aliases WHERE
+			source_username IS NULL AND
+			source_domain = ?
+			AND destination_username = ?
+			AND destination_domain = ?`,
+			srcdomain, dstuser, dstdomain)
+	}
 	if err != nil {
 		return err
 	}
@@ -183,10 +197,20 @@ func (db *DB) DeleteAlias(srcuser sql.NullString, srcdomain, dstuser, dstdomain 
 
 // DeleteAliasAll removes an alias.
 func (db *DB) DeleteAliasAll(srcuser sql.NullString, srcdomain string) error {
-	res, err := db.Exec(`DELETE FROM aliases WHERE
-		source_username = ? AND
-		source_domain = ?`,
-		srcuser, srcdomain)
+	var (
+		res sql.Result
+		err error
+	)
+
+	if srcuser.Valid {
+		res, err = db.Exec(`DELETE FROM aliases WHERE
+			source_username = ? AND source_domain = ?`,
+			srcuser, srcdomain)
+	} else {
+		res, err = db.Exec(`DELETE FROM aliases WHERE
+			source_username IS NULL AND source_domain = ?`,
+			srcdomain)
+	}
 	if err != nil {
 		return err
 	}
@@ -206,7 +230,10 @@ func (db *DB) DeleteAliasAll(srcuser sql.NullString, srcdomain string) error {
 // FindAllAliases returns a list of all aliases for a domain.
 func (db *DB) FindAllAliases(domain string) ([]Alias, error) {
 	var aliases []Alias
-	err := db.Select(&aliases, "SELECT * from aliases WHERE source_domain = ? ORDER BY source_username", domain)
+	err := db.Select(&aliases, `SELECT * from aliases
+		WHERE source_domain = ?
+		ORDER BY source_username, destination_username, destination_domain`,
+		domain)
 	if err != nil {
 		return nil, err
 	}

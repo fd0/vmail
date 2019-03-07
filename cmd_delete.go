@@ -68,21 +68,20 @@ var cmdDeleteAlias = &cobra.Command{
 		}
 
 		var (
-			srcuser   sql.NullString
-			srcdomain string
-			err       error
+			srcusername string
+			srcuser     sql.NullString
+			srcdomain   string
+			err         error
 		)
 
-		srcuser.String, srcdomain, err = splitMailAddress(args[0])
+		srcusername, srcdomain, err = splitMailAddress(args[0])
 		if err != nil {
 			return err
 		}
 
 		// handle catchall alias
-		if srcuser.String == "*" {
-			srcuser.String = ""
-			srcuser.Valid = false
-		} else {
+		if srcusername != "*" {
+			srcuser.String = srcusername
 			srcuser.Valid = true
 		}
 
@@ -91,7 +90,7 @@ var cmdDeleteAlias = &cobra.Command{
 			err = opts.db.DeleteAliasAll(srcuser, srcdomain)
 			if err != nil {
 				return fmt.Errorf("delete all aliases for %v@%v failed: %v",
-					srcuser, srcdomain, err)
+					srcusername, srcdomain, err)
 			}
 		} else {
 			// delete specified destinations
@@ -104,7 +103,7 @@ var cmdDeleteAlias = &cobra.Command{
 				err = opts.db.DeleteAlias(srcuser, srcdomain, dstuser, dstdomain)
 				if err != nil {
 					return fmt.Errorf("delete alias %v@%v -> %v@%v failed: %v",
-						srcuser, srcdomain, dstuser, dstdomain, err)
+						srcusername, srcdomain, dstuser, dstdomain, err)
 				}
 			}
 		}
