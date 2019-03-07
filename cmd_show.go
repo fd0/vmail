@@ -2,9 +2,12 @@ package main
 
 import (
 	"errors"
+	"fmt"
+	"io"
 	"os"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/fd0/vmail/table"
 	"github.com/spf13/cobra"
 )
@@ -30,6 +33,8 @@ func init() {
 				return err
 			}
 
+			fmt.Println()
+
 			err = printAliases(opts.db, name)
 			if err != nil {
 				return err
@@ -50,18 +55,50 @@ func printAccounts(db *DB, name string) error {
 		return nil
 	}
 
-	t := table.New()
-	t.AddColumn(" Name ", " {{ .Username }}@{{ .Domain }} ")
-	t.AddColumn(" Quota ", " {{ .Quota }} ")
+	t := newColoredTable()
+	t.AddColumn(" Mailbox ", " {{ .Username }}@{{ .Domain }} ")
+	t.AddColumn(" Quota ", " {{ if gt .Quota 0 }}{{ .Quota }}{{ end }} ")
 	t.AddColumn(" Enabled ", " {{ .Enabled }} ")
-
-	msg("\nMailboxes:\n\n")
 
 	for _, a := range accounts {
 		t.AddRow(a)
 	}
 
 	return t.Write(os.Stdout)
+}
+
+func newColoredTable() *table.Table {
+	t := table.New()
+	var hlen int
+	t.PrintSeparator = func(wr io.Writer, s string) error {
+		_, err := os.Stdout.WriteString(s + "\n")
+		hlen = len(s)
+		return err
+	}
+
+	highlight := color.New(color.Bold).PrintlnFunc()
+	t.PrintHeader = func(wr io.Writer, s string) error {
+		highlight(s)
+		return nil
+	}
+
+	reverse := color.New(color.ReverseVideo).PrintlnFunc()
+	t.PrintData = func(wr io.Writer, i int, s string) error {
+		if len(s) < hlen {
+			// pad with spaces so that the lines with reverse colors looks nice
+			s = s + strings.Repeat(" ", hlen-len(s))
+		}
+		var err error
+		if i%2 == 0 {
+			_, err = os.Stdout.WriteString(s + "\n")
+		} else {
+			reverse(s)
+		}
+
+		return err
+	}
+
+	return t
 }
 
 func printAliases(db *DB, name string) error {
@@ -74,8 +111,6 @@ func printAliases(db *DB, name string) error {
 		return nil
 	}
 
-	msg("\nAliases:\n\n")
-
 	aliasList := make(map[string][]Alias)
 	for _, a := range aliases {
 		name := a.SourceUsername.String
@@ -85,12 +120,12 @@ func printAliases(db *DB, name string) error {
 		aliasList[name] = append(aliasList[name], a)
 	}
 
-	t := table.New()
-	t.AddColumn(" Name ", " {{ .Name }} ")
+	t := newColoredTable()
+	t.AddColumn(" Alias ", " {{ .Alias }} ")
 	t.AddColumn(" Destinations ", " {{ .Destinations }} ")
 
 	type rowData struct {
-		Name         string
+		Alias        string
 		Destinations string
 	}
 
@@ -102,7 +137,7 @@ func printAliases(db *DB, name string) error {
 		}
 
 		t.AddRow(rowData{
-			Name:         name,
+			Alias:        name,
 			Destinations: strings.Join(destinations, "\n "),
 		})
 	}
