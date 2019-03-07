@@ -157,6 +157,52 @@ func (db *DB) CreateAlias(a Alias) error {
 	return nil
 }
 
+// DeleteAlias removes an alias.
+func (db *DB) DeleteAlias(srcuser sql.NullString, srcdomain, dstuser, dstdomain string) error {
+	res, err := db.Exec(`DELETE FROM aliases WHERE
+		source_username = ? AND
+		source_domain = ?
+		AND destination_username = ?
+		AND destination_domain = ?`,
+		srcuser, srcdomain, dstuser, dstdomain)
+	if err != nil {
+		return err
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if n == 0 {
+		return errors.New("not found")
+	}
+
+	return nil
+}
+
+// DeleteAliasAll removes an alias.
+func (db *DB) DeleteAliasAll(srcuser sql.NullString, srcdomain string) error {
+	res, err := db.Exec(`DELETE FROM aliases WHERE
+		source_username = ? AND
+		source_domain = ?`,
+		srcuser, srcdomain)
+	if err != nil {
+		return err
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if n == 0 {
+		return errors.New("not found")
+	}
+
+	return nil
+}
+
 // FindAllAliases returns a list of all aliases for a domain.
 func (db *DB) FindAllAliases(domain string) ([]Alias, error) {
 	var aliases []Alias

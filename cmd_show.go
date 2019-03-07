@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/fatih/color"
@@ -130,10 +131,16 @@ func printAliases(db *DB, domain string) error {
 		Destinations string
 	}
 
-	for name, aliases := range aliasList {
+	names := make([]string, 0, len(aliasList))
+	for name := range aliasList {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+
+	for _, name := range names {
 		var destinations []string
 
-		for _, a := range aliases {
+		for _, a := range aliasList[name] {
 			destinations = append(destinations, a.DestinationUsername+"@"+a.DestinationDomain)
 		}
 

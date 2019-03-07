@@ -1,7 +1,9 @@
 package main
 
 import (
+	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/spf13/cobra"
 )
@@ -57,8 +59,64 @@ var cmdDeleteMailbox = &cobra.Command{
 	},
 }
 
+var cmdDeleteAlias = &cobra.Command{
+	Use:   "alias [flags] ALIAS [DEST] [DEST...]",
+	Short: "Delete an alias",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return errors.New("pass the alias to delete and optional the destination to delete as parameters")
+		}
+
+		var (
+			srcuser   sql.NullString
+			srcdomain string
+			err       error
+		)
+
+		srcuser.String, srcdomain, err = splitMailAddress(args[0])
+		if err != nil {
+			return err
+		}
+
+		// handle catchall alias
+		if srcuser.String == "*" {
+			srcuser.String = ""
+			srcuser.Valid = false
+		} else {
+			srcuser.Valid = true
+		}
+
+		if len(args) == 1 {
+			// delete all destinations
+			err = opts.db.DeleteAliasAll(srcuser, srcdomain)
+			if err != nil {
+				return fmt.Errorf("delete all aliases for %v@%v failed: %v",
+					srcuser, srcdomain, err)
+			}
+		} else {
+			// delete specified destinations
+			for _, dest := range args[1:] {
+				dstuser, dstdomain, err := splitMailAddress(dest)
+				if err != nil {
+					return err
+				}
+
+				err = opts.db.DeleteAlias(srcuser, srcdomain, dstuser, dstdomain)
+				if err != nil {
+					return fmt.Errorf("delete alias %v@%v -> %v@%v failed: %v",
+						srcuser, srcdomain, dstuser, dstdomain, err)
+				}
+			}
+		}
+
+		msg("alias deleted successfully")
+		return nil
+	},
+}
+
 func init() {
 	cmdDelete.AddCommand(cmdDeleteDomain)
 	cmdDelete.AddCommand(cmdDeleteMailbox)
+	cmdDelete.AddCommand(cmdDeleteAlias)
 	root.AddCommand(cmdDelete)
 }
