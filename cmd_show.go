@@ -101,8 +101,8 @@ func newColoredTable() *table.Table {
 	return t
 }
 
-func printAliases(db *DB, name string) error {
-	aliases, err := opts.db.FindAllAliases(name)
+func printAliases(db *DB, domain string) error {
+	aliases, err := opts.db.FindAllAliases(domain)
 	if err != nil {
 		return err
 	}
@@ -121,11 +121,12 @@ func printAliases(db *DB, name string) error {
 	}
 
 	t := newColoredTable()
-	t.AddColumn(" Alias ", " {{ .Alias }} ")
+	t.AddColumn(" Alias ", " {{ .Alias }}@{{ .Domain }} ")
 	t.AddColumn(" Destinations ", " {{ .Destinations }} ")
 
 	type rowData struct {
 		Alias        string
+		Domain       string
 		Destinations string
 	}
 
@@ -138,6 +139,7 @@ func printAliases(db *DB, name string) error {
 
 		t.AddRow(rowData{
 			Alias:        name,
+			Domain:       domain,
 			Destinations: strings.Join(destinations, "\n "),
 		})
 	}

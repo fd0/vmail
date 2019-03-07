@@ -80,6 +80,25 @@ func (db *DB) DeleteDomain(name string) error {
 	return nil
 }
 
+// DeleteMailbox removes a mailbox.
+func (db *DB) DeleteMailbox(user, domain string) error {
+	res, err := db.Exec("DELETE FROM accounts WHERE username = ? AND domain = ?", user, domain)
+	if err != nil {
+		return err
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if n == 0 {
+		return errors.New("not found")
+	}
+
+	return nil
+}
+
 // Account is a mailbox.
 type Account struct {
 	ID       int
@@ -123,6 +142,19 @@ type Alias struct {
 	DestinationUsername string         `db:"destination_username"`
 	DestinationDomain   string         `db:"destination_domain"`
 	Enabled             bool           `db:"enabled"`
+}
+
+// CreateAlias creates a new alias for the domain d.
+func (db *DB) CreateAlias(a Alias) error {
+	_, err := db.Exec(`INSERT INTO aliases
+		(source_username, source_domain, destination_username, destination_domain, enabled)
+		VALUES (?, ?, ?, ?, ?)`,
+		a.SourceUsername, a.SourceDomain, a.DestinationUsername, a.DestinationDomain, a.Enabled)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // FindAllAliases returns a list of all aliases for a domain.
