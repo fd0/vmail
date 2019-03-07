@@ -1,7 +1,8 @@
 package main
 
 import (
-	"os"
+	"fmt"
+	"os/user"
 
 	_ "github.com/Go-SQL-Driver/MySQL"
 	"github.com/spf13/cobra"
@@ -14,7 +15,14 @@ var opts struct {
 }
 
 func init() {
-	root.Flags().StringVar(&opts.Database, "database", os.Getenv("VMAIL_DB"), "connect to this database")
+	var defaultDatabase = ""
+
+	cur, err := user.Current()
+	if err == nil {
+		defaultDatabase = fmt.Sprintf("%s@unix(/run/mysqld/mysqld.sock)/vmail", cur.Username)
+	}
+
+	root.Flags().StringVar(&opts.Database, "database", defaultDatabase, "connect to this database")
 }
 
 var root = cobra.Command{
