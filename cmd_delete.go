@@ -16,7 +16,7 @@ func init() {
 	}
 
 	cmdNew.AddCommand(&cobra.Command{
-		Use:   "domain [options] name",
+		Use:   "domain [flags] name",
 		Short: "Delete a domain",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {

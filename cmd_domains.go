@@ -6,7 +6,7 @@ import (
 
 func init() {
 	root.AddCommand(&cobra.Command{
-		Use:   "domains [options] [name]",
+		Use:   "domains [flags] [filter]",
 		Short: "List domains (with optional filter)",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var name string
