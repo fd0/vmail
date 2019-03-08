@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"os/user"
 
 	_ "github.com/Go-SQL-Driver/MySQL"
@@ -15,11 +16,13 @@ var opts struct {
 }
 
 func init() {
-	var defaultDatabase = ""
+	var defaultDatabase = os.Getenv("VMAIL_DB")
 
-	cur, err := user.Current()
-	if err == nil {
-		defaultDatabase = fmt.Sprintf("%s@unix(/run/mysqld/mysqld.sock)/vmail", cur.Username)
+	if defaultDatabase == "" {
+		cur, err := user.Current()
+		if err == nil {
+			defaultDatabase = fmt.Sprintf("%s@unix(/run/mysqld/mysqld.sock)/vmail", cur.Username)
+		}
 	}
 
 	root.Flags().StringVar(&opts.Database, "database", defaultDatabase, "connect to this database")
