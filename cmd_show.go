@@ -83,7 +83,7 @@ func newColoredTable() *table.Table {
 		return nil
 	}
 
-	reverse := color.New(color.ReverseVideo).PrintlnFunc()
+	reverse := color.New(color.BgBlack).PrintlnFunc()
 	t.PrintData = func(wr io.Writer, i int, s string) error {
 		if len(s) < hlen {
 			// pad with spaces so that the lines with reverse colors looks nice
