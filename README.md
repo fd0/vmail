@@ -91,3 +91,10 @@ List all domains:
 
     $ vmail domains
     example.com
+
+Change the password for a mailbox:
+
+    $ vmail password admin@example.com
+    enter password:
+    repeat password:
+    password for admin@example.com updated
