@@ -1,4 +1,7 @@
-vmail - command-line for managing mailboxes and aliases for mail server setups based on the [howto (English)](https://thomas-leister.de/en/mailserver-debian-stretch) ([German](https://thomas-leister.de/mailserver-debian-stretch/)) by [Thomas Leister](https://thomas-leister.de).
+vmail - command-line tool for managing mailboxes and aliases for mail server
+setups based on the [howto (English)](https://thomas-leister.de/en/mailserver-debian-stretch)
+([German](https://thomas-leister.de/mailserver-debian-stretch/))
+by [Thomas Leister](https://thomas-leister.de).
 
 This one is written in Go, there's also a version in Rust here: https://github.com/awidegreen/vmail-rs
 
