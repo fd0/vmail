@@ -142,10 +142,7 @@ var cmdCreateMailbox = &cobra.Command{
 			pwhash = hashPassword(pw)
 		}
 
-		fmt.Printf("options: %+v\n", createMailboxOpts.RawPasswordHash)
-
 		if !createMailboxOpts.RawPasswordHash {
-			fmt.Printf("check hash\n")
 			err = checkHash(pwhash)
 			if err != nil {
 				return err
