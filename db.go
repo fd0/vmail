@@ -146,6 +146,36 @@ func (db *DB) FindAllAccounts(domain string) ([]Account, error) {
 	return accounts, nil
 }
 
+// FindAccount returns the account.
+func (db *DB) FindAccount(username, domain string) (Account, error) {
+	var a Account
+	err := db.Select(&a, "SELECT * from accounts WHERE username = ? AND domain = ?", username, domain)
+	if err != nil {
+		return Account{}, err
+	}
+
+	return a, nil
+}
+
+// UpdateAccountPassword sets the password for the given account.
+func (db *DB) UpdateAccountPassword(username, domain, passwordhash string) error {
+	res, err := db.Exec("UPDATE accounts SET password = ? WHERE username = ? AND domain = ?", passwordhash, username, domain)
+	if err != nil {
+		return err
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if n == 0 {
+		return errors.New("not found")
+	}
+
+	return nil
+}
+
 // Alias forwards email to another destination.
 type Alias struct {
 	ID                  int            `db:"id"`
