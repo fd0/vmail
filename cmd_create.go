@@ -100,16 +100,18 @@ var cmdCreateDomain = &cobra.Command{
 }
 
 var createMailboxOpts = struct {
-	Quota        uint64
-	PasswordHash string
-	Password     string
-	SendOnly     bool
+	Quota           uint64
+	PasswordHash    string
+	Password        string
+	RawPasswordHash bool
+	SendOnly        bool
 }{}
 
 func init() {
 	cmdCreateMailbox.Flags().Uint64Var(&createMailboxOpts.Quota, "quota", 0, "grant this mailbox `bytes` ")
 	cmdCreateMailbox.Flags().StringVar(&createMailboxOpts.Password, "password", "", "use `pwd` as the password")
 	cmdCreateMailbox.Flags().StringVar(&createMailboxOpts.PasswordHash, "password-hash", "", "use `hash` as the password (already hashed)")
+	cmdCreateMailbox.Flags().BoolVar(&createMailboxOpts.RawPasswordHash, "raw-password-hash", false, "do not check password hash")
 	cmdCreateMailbox.Flags().BoolVar(&createMailboxOpts.SendOnly, "send-only", false, "do not receive mail for this account")
 }
 
@@ -140,9 +142,11 @@ var cmdCreateMailbox = &cobra.Command{
 			pwhash = hashPassword(pw)
 		}
 
-		err = checkHash(pwhash)
-		if err != nil {
-			return err
+		if !passwordOptions.RawPasswordHash {
+			err = checkHash(pwhash)
+			if err != nil {
+				return err
+			}
 		}
 
 		err = opts.db.CreateAccount(Account{

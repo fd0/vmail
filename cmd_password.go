@@ -8,13 +8,15 @@ import (
 )
 
 var passwordOptions = struct {
-	PasswordHash string
-	Password     string
+	PasswordHash    string
+	Password        string
+	RawPasswordHash bool
 }{}
 
 func init() {
-	cmdPassword.Flags().StringVar(&createMailboxOpts.Password, "password", "", "use `pwd` as the password")
-	cmdPassword.Flags().StringVar(&createMailboxOpts.PasswordHash, "password-hash", "", "use `hash` as the password (already hashed)")
+	cmdPassword.Flags().StringVar(&passwordOptions.Password, "password", "", "use `pwd` as the password")
+	cmdPassword.Flags().StringVar(&passwordOptions.PasswordHash, "password-hash", "", "use `hash` as the password (already hashed)")
+	cmdPassword.Flags().BoolVar(&passwordOptions.RawPasswordHash, "raw-password-hash", false, "do not check password hash")
 	root.AddCommand(cmdPassword)
 }
 
@@ -45,9 +47,11 @@ var cmdPassword = &cobra.Command{
 			pwhash = hashPassword(pw)
 		}
 
-		err = checkHash(pwhash)
-		if err != nil {
-			return err
+		if !passwordOptions.RawPasswordHash {
+			err = checkHash(pwhash)
+			if err != nil {
+				return err
+			}
 		}
 
 		err = opts.db.UpdateAccountPassword(user, domain, pwhash)
