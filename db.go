@@ -61,8 +61,20 @@ func (db *DB) FindAllDomains(name string) ([]Domain, error) {
 	return ds, nil
 }
 
-// DeleteDomain removes a domain.
+// DeleteDomain removes a domain, including all mailboxes and aliases.
 func (db *DB) DeleteDomain(name string) error {
+	// delete mailboxes
+	_, err := db.Exec("DELETE FROM accounts WHERE domain = ?", name)
+	if err != nil {
+		return fmt.Errorf("removing mailboxes for %v failed: %v", name, err)
+	}
+
+	// delete aliases
+	_, err = db.Exec("DELETE FROM aliases WHERE source_domain = ?", name)
+	if err != nil {
+		return fmt.Errorf("removing aliases for %v failed: %v", name, err)
+	}
+
 	res, err := db.Exec("DELETE FROM domains WHERE domain = ?", name)
 	if err != nil {
 		return err
