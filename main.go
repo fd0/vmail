@@ -31,6 +31,7 @@ func init() {
 var root = cobra.Command{
 	SilenceUsage:  true,
 	SilenceErrors: true,
+	Use:           "vmail [flags] command",
 	PersistentPreRunE: func(_ *cobra.Command, _ []string) (err error) {
 		opts.db, err = ConnectDB("mysql", opts.Database)
 		if err != nil {
