@@ -83,7 +83,7 @@ func newColoredTable() *table.Table {
 		return nil
 	}
 
-	reverse := color.New(color.BgBlack).PrintlnFunc()
+	reverse := color.New(color.BgBlack).PrintfFunc()
 	t.PrintData = func(wr io.Writer, i int, s string) error {
 		if len(s) < hlen {
 			// pad with spaces so that the lines with reverse colors looks nice
@@ -94,6 +94,7 @@ func newColoredTable() *table.Table {
 			_, err = os.Stdout.WriteString(s + "\n")
 		} else {
 			reverse(s)
+			fmt.Printf("\n")
 		}
 
 		return err
