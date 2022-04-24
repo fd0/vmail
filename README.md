@@ -12,9 +12,9 @@ wrote my own version of the program in Go, which results in a static binary.
 Building
 ========
 
-You need Go >= 1.11, then run the following command inside the checked-out repository:
+You need Go >= 1.16, then run the following command inside the checked-out repository:
 
-    $ GO111MODULE=on go build
+    $ go build
 
 This will pull the needed dependencies, verify them cryptographically and build
 a static binary called `vmail`.

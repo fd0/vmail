@@ -1,6 +1,6 @@
 module github.com/fd0/vmail
 
-go 1.12
+go 1.16
 
 require (
 	github.com/Go-SQL-Driver/MySQL v1.4.1
