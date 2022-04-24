@@ -125,11 +125,15 @@ func printAliases(db *DB, domain string) error {
 	t := newColoredTable()
 	t.AddColumn(" Alias ", " {{ .Alias }}@{{ .Domain }} ")
 	t.AddColumn(" Destinations ", " {{ .Destinations }} ")
+	t.AddColumn(" Blacklisted ", " {{ .Blacklisted }} ")
+	t.AddColumn(" Enabled ", " {{ .Enabled }} ")
 
 	type rowData struct {
 		Alias        string
 		Domain       string
 		Destinations string
+		Blacklisted  string
+		Enabled      string
 	}
 
 	names := make([]string, 0, len(aliasList))
@@ -139,16 +143,20 @@ func printAliases(db *DB, domain string) error {
 	sort.Strings(names)
 
 	for _, name := range names {
-		var destinations []string
+		var destinations, blacklisted, enabled []string
 
 		for _, a := range aliasList[name] {
 			destinations = append(destinations, a.DestinationUsername+"@"+a.DestinationDomain)
+			blacklisted = append(blacklisted, fmt.Sprintf("%v", a.Blacklisted))
+			enabled = append(enabled, fmt.Sprintf("%v", a.Enabled))
 		}
 
 		t.AddRow(rowData{
 			Alias:        name,
 			Domain:       domain,
 			Destinations: strings.Join(destinations, "\n "),
+			Blacklisted:  strings.Join(blacklisted, "\n "),
+			Enabled:      strings.Join(enabled, "\n "),
 		})
 	}
 

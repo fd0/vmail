@@ -203,12 +203,13 @@ var cmdCreateAlias = &cobra.Command{
 				SourceDomain:        srcdomain,
 				DestinationUsername: dstuser,
 				DestinationDomain:   dstdomain,
+				Blacklisted:         false,
 				Enabled:             true,
 			})
 
 			if err != nil {
 				return fmt.Errorf("creating alias %v@%v -> %v@%v failed: %v",
-					srcuser, srcdomain, dstuser, dstdomain, err)
+					srcuser.String, srcdomain, dstuser, dstdomain, err)
 			}
 		}
 

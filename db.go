@@ -183,15 +183,16 @@ type Alias struct {
 	SourceDomain        string         `db:"source_domain"`
 	DestinationUsername string         `db:"destination_username"`
 	DestinationDomain   string         `db:"destination_domain"`
+	Blacklisted         bool           `db:"blacklisted"`
 	Enabled             bool           `db:"enabled"`
 }
 
 // CreateAlias creates a new alias for the domain d.
 func (db *DB) CreateAlias(a Alias) error {
 	_, err := db.Exec(`INSERT INTO aliases
-		(source_username, source_domain, destination_username, destination_domain, enabled)
-		VALUES (?, ?, ?, ?, ?)`,
-		a.SourceUsername, a.SourceDomain, a.DestinationUsername, a.DestinationDomain, a.Enabled)
+		(source_username, source_domain, destination_username, destination_domain, blacklisted, enabled)
+		VALUES (?, ?, ?, ?, ?, ?)`,
+		a.SourceUsername, a.SourceDomain, a.DestinationUsername, a.DestinationDomain, a.Blacklisted, a.Enabled)
 	if err != nil {
 		return err
 	}
@@ -269,6 +270,20 @@ func (db *DB) DeleteAliasAll(srcuser sql.NullString, srcdomain string) error {
 	return nil
 }
 
+// FindAlias returns a list of aliases for a domain.
+func (db *DB) FindAliases(localPart, domain string) ([]Alias, error) {
+	var aliases []Alias
+	err := db.Select(&aliases, `SELECT * from aliases
+		WHERE source_username = ? and source_domain = ?
+		ORDER BY source_username, destination_username, destination_domain`,
+		localPart, domain)
+	if err != nil {
+		return nil, err
+	}
+
+	return aliases, nil
+}
+
 // FindAllAliases returns a list of all aliases for a domain.
 func (db *DB) FindAllAliases(domain string) ([]Alias, error) {
 	var aliases []Alias
@@ -281,4 +296,33 @@ func (db *DB) FindAllAliases(domain string) ([]Alias, error) {
 	}
 
 	return aliases, nil
+}
+
+// UpdateAlias updates an alias.
+func (db *DB) UpdateAlias(a Alias) error {
+	res, err := db.Exec(`UPDATE aliases
+		SET
+			source_username = ?, source_domain = ?,
+			destination_username = ?, destination_domain = ?,
+			blacklisted = ?, enabled = ?
+		WHERE id = ?`,
+		a.SourceUsername, a.SourceDomain,
+		a.DestinationUsername, a.DestinationDomain,
+		a.Blacklisted, a.Enabled,
+		a.ID,
+	)
+	if err != nil {
+		return err
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if n == 0 {
+		return errors.New("not found")
+	}
+
+	return nil
 }
